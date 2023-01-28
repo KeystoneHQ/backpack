@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import type {
   Blockchain,
   BlockchainKeyringInit,
@@ -12,12 +12,18 @@ import type { SelectedAccount } from "../../common/Account/ImportAccounts";
 import { ImportAccounts } from "../../common/Account/ImportAccounts";
 import { CloseButton } from "../../common/Layout/Drawer";
 import { NavBackButton, WithNav } from "../../common/Layout/Nav";
+import { ConnectHardwareKeystone } from "../../Unlocked/Settings/AddConnectWallet/ConnectHardware/ConnectHardwareKeystone";
 import { ConnectHardwareSearching } from "../../Unlocked/Settings/AddConnectWallet/ConnectHardware/ConnectHardwareSearching";
 import { ConnectHardwareWelcome } from "../../Unlocked/Settings/AddConnectWallet/ConnectHardware/ConnectHardwareWelcome";
 
 import { HardwareDefaultAccount } from "./HardwareDefaultAccount";
 import { HardwareSearch } from "./HardwareSearch";
 import { HardwareSign } from "./HardwareSign";
+
+export enum HardwareType {
+  Keystone = "keystone",
+  USB = "usb",
+}
 
 // We are using a hook here to generate the steps for the hardware onboard
 // component to allow these steps to be used in the middle of the RecoverAccount
@@ -47,6 +53,9 @@ export function useHardwareOnboardSteps({
   const [transportError, setTransportError] = useState(false);
   const [accounts, setAccounts] = useState<Array<SelectedAccount>>();
   const [derivationPath, setDerivationPath] = useState<DerivationPath>();
+  const [hardwareType, setHardwareType] = useState<HardwareType>(
+    HardwareType.Keystone
+  );
 
   // Component only allows onboarding of a singular selected account at this
   // time, the signing prompt needs to be reworked to handle multiple accounts
@@ -54,19 +63,28 @@ export function useHardwareOnboardSteps({
   // this component to handle multiple accounts
   const account = accounts ? accounts[0] : undefined;
 
+  const onWelcomeNext = useCallback((type: HardwareType) => {
+    setHardwareType(type);
+    nextStep();
+  }, []);
+
   //
   // Flow for onboarding a hardware wallet.
   //
   const steps = [
-    <ConnectHardwareWelcome onNext={nextStep} />,
-    <ConnectHardwareSearching
-      blockchain={blockchain}
-      onNext={(transport) => {
-        setTransport(transport);
-        nextStep();
-      }}
-      isConnectFailure={!!transportError}
-    />,
+    <ConnectHardwareWelcome onNext={onWelcomeNext} />,
+    hardwareType === HardwareType.USB ? (
+      <ConnectHardwareSearching
+        blockchain={blockchain}
+        onNext={(transport) => {
+          setTransport(transport);
+          nextStep();
+        }}
+        isConnectFailure={!!transportError}
+      />
+    ) : (
+      <ConnectHardwareKeystone />
+    ),
     //
     // Use one of multiple components to get a wallet to proceed with
     //
