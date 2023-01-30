@@ -11,6 +11,7 @@ import type {
   Preferences,
   RpcRequest,
   RpcResponse,
+  UR,
   XnftPreference,
 } from "@coral-xyz/common";
 import {
@@ -63,6 +64,7 @@ import {
   UI_RPC_METHOD_KEYRING_TYPE_READ,
   UI_RPC_METHOD_KEYRING_VALIDATE_MNEMONIC,
   UI_RPC_METHOD_LEDGER_IMPORT,
+  UI_RPC_METHOD_KEYSTONE_IMPORT,
   UI_RPC_METHOD_NAVIGATION_ACTIVE_TAB_UPDATE,
   UI_RPC_METHOD_NAVIGATION_CURRENT_URL_UPDATE,
   UI_RPC_METHOD_NAVIGATION_POP,
@@ -234,6 +236,16 @@ async function handle<T = any>(
         params[2],
         params[3],
         params[4]
+      );
+    // 
+    // Keystone
+    // 
+    case UI_RPC_METHOD_KEYSTONE_IMPORT:
+      return await handleKeyringKeystoneImport(
+        ctx,
+        params[0],
+        params[1],
+        params[2],
       );
     //
     // Navigation.
@@ -1128,6 +1140,20 @@ async function handleKeyringLedgerImport(
     derivationPath,
     account,
     publicKey,
+    signature
+  );
+  return [resp];
+}
+
+async function handleKeyringKeystoneImport(
+  ctx: Context<Backend>,
+  blockchain: Blockchain,
+  ur: UR,
+  signature?: string
+): Promise<RpcResponse<string>> {
+  const resp = await ctx.backend.keystoneImport(
+    blockchain,
+    ur,
     signature
   );
   return [resp];

@@ -9,6 +9,7 @@ import type {
   DerivationPath,
   EventEmitter,
   KeyringInit,
+  UR,
 } from "@coral-xyz/common";
 import {
   BACKEND_API_URL,
@@ -485,6 +486,18 @@ export class KeyringStore {
     });
   }
 
+  public async keystoneImport(
+    blockchain: Blockchain,
+    ur: {type: string, cbor: string}
+  ) {
+    return await this.withUnlockAndPersist(async () => {
+      return await this.activeUserKeyring.keystoneImport(
+        blockchain,
+        ur
+      );
+    });
+  }
+
   /**
    * Update the active public key for the given blockchain.
    */
@@ -847,6 +860,20 @@ class UserKeyring {
     await ledgerKeyring.ledgerImport(dPath, account, pubkey);
     await store.setKeyname(pubkey, name);
     await store.setIsCold(pubkey, true);
+  }
+
+  public async keystoneImport(
+    blockchain: Blockchain,
+    ur: UR
+  ) {
+    const blockchainKeyring = this.blockchains.get(blockchain);
+    const keystoneKeyring = blockchainKeyring!.keystoneKeyring!;
+    await keystoneKeyring.keystoneImport(ur);
+    await Promise.all(keystoneKeyring.getAccounts().map(async (e) => {
+      const name = DefaultKeyname.defaultKeystone(e.account);
+      await store.setKeyname(e.publicKey, name);
+      await store.setIsCold(e.publicKey, true);
+    }));
   }
 
   public async keyDelete(blockchain: Blockchain, pubkey: string) {

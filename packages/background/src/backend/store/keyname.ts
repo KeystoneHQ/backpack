@@ -41,4 +41,7 @@ export const DefaultKeyname = {
   defaultLedger(accountIndex: number): string {
     return `Ledger ${accountIndex + 1}`;
   },
+  defaultKeystone(accountIndex: number): string {
+    return `Keystone ${accountIndex + 1}`;
+  },
 };

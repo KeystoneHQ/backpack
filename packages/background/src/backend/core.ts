@@ -8,6 +8,7 @@ import type {
   KeyringType,
   Preferences,
   XnftPreference,
+  UR,
 } from "@coral-xyz/common";
 import {
   BACKEND_API_URL,
@@ -1127,6 +1128,29 @@ export class Backend {
       derivationPath,
       account,
       publicKey
+    );
+    try {
+      await this.userAccountPublicKeyCreate(blockchain, publicKey, signature);
+    } catch (error) {
+      // Something went wrong persisting to server, roll back changes to the
+      // keyring.
+      await this.keyringKeyDelete(blockchain, publicKey);
+      throw error;
+    }
+    // Set the active wallet to the newly added public key
+    await this.activeWalletUpdate(publicKey, blockchain);
+    return SUCCESS_RESPONSE;
+  }
+
+  async keystoneImport(
+    blockchain: Blockchain,
+    ur: UR,
+    signature?: string
+  ) {
+    const publicKey = '';
+    await this.keyringStore.keystoneImport(
+      blockchain,
+      ur
     );
     try {
       await this.userAccountPublicKeyCreate(blockchain, publicKey, signature);

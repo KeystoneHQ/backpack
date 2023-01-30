@@ -3,7 +3,9 @@ import type {
   HdKeyringJson,
   ImportedDerivationPath,
   KeyringJson,
+  KeystoneKeyringJson,
   LedgerKeyringJson,
+  UR,
 } from "@coral-xyz/common";
 
 import type { LedgerKeyringBase } from "./ledger";
@@ -63,4 +65,22 @@ export interface LedgerKeyring extends LedgerKeyringBase {
   signMessage(tx: Buffer, address: string): Promise<string>;
   keyCount(): number;
   ledgerImport(path: string, account: number, publicKey: string): Promise<void>;
+}
+
+//
+// Keystone keyring types
+//
+
+export interface KeystoneKeyringFactory {
+  fromAccounts(accounts: Array<ImportedDerivationPath>): KeystoneKeyring;
+  fromUR(ur: UR): KeystoneKeyring;
+  fromJson(obj: KeystoneKeyringJson): KeystoneKeyring;
+}
+
+export interface KeystoneKeyring extends Keyring {
+  signTransaction(tx: Buffer, address: string): Promise<string>;
+  signMessage(tx: Buffer, address: string): Promise<string>;
+  keystoneImport(ur: UR): Promise<void>;
+  toJson(): KeystoneKeyringJson;
+  getAccounts(): ImportedDerivationPath[];
 }
