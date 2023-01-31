@@ -874,6 +874,7 @@ class UserKeyring {
       await store.setKeyname(e.publicKey, name);
       await store.setIsCold(e.publicKey, true);
     }));
+    return keystoneKeyring.getAccounts();
   }
 
   public async keyDelete(blockchain: Blockchain, pubkey: string) {

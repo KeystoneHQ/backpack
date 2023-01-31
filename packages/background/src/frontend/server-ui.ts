@@ -1,7 +1,7 @@
 // All RPC request handlers for requests that can be sent from the trusted
 // extension UI to the background script.
 
-import type {
+import {
   AutolockSettingsOption,
   Blockchain,
   Context,
@@ -11,6 +11,7 @@ import type {
   Preferences,
   RpcRequest,
   RpcResponse,
+  UI_RPC_METHOD_KEYSTONE_UR_DECODE,
   UR,
   XnftPreference,
 } from "@coral-xyz/common";
@@ -247,7 +248,13 @@ async function handle<T = any>(
         params[1],
         params[2],
       );
-    //
+    case UI_RPC_METHOD_KEYSTONE_UR_DECODE:
+      return await handleKeyringKeystoneURDecode(
+        ctx,
+        params[0],
+        params[1],
+      );
+      //
     // Navigation.
     //
     case UI_RPC_METHOD_NAVIGATION_PUSH:
@@ -1155,6 +1162,18 @@ async function handleKeyringKeystoneImport(
     blockchain,
     ur,
     signature
+  );
+  return [resp];
+}
+
+async function handleKeyringKeystoneURDecode(
+  ctx: Context<Backend>,
+  blockchain: Blockchain,
+  ur: UR,
+): Promise<RpcResponse<string>> {
+  const resp = await ctx.backend.keystoneURDecode(
+    blockchain,
+    ur,
   );
   return [resp];
 }

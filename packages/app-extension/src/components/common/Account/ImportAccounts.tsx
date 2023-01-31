@@ -6,9 +6,12 @@ import {
   DerivationPath,
   derivationPathPrefix,
   EthereumConnectionUrl,
+  ImportedDerivationPath,
   LOAD_PUBLIC_KEY_AMOUNT,
   UI_RPC_METHOD_KEYRING_STORE_READ_ALL_PUBKEYS,
+  UI_RPC_METHOD_KEYSTONE_UR_DECODE,
   UI_RPC_METHOD_PREVIEW_PUBKEYS,
+  UR,
 } from "@coral-xyz/common";
 import { Loading, PrimaryButton, TextInput } from "@coral-xyz/react-common";
 import { useBackgroundClient } from "@coral-xyz/recoil";
@@ -55,6 +58,7 @@ export function ImportAccounts({
   blockchain,
   mnemonic,
   transport,
+  ur,
   onNext,
   onError,
   allowMultiple = true,
@@ -62,6 +66,7 @@ export function ImportAccounts({
   blockchain: Blockchain;
   mnemonic?: string;
   transport?: Transport | null;
+  ur?: UR;
   onNext: (
     selectedAccounts: SelectedAccount[],
     derivationPath: DerivationPath,
@@ -142,12 +147,16 @@ export function ImportAccounts({
       // Loading accounts from a Ledger
       loaderFn = (derivationPath: DerivationPath) =>
         loadLedgerPublicKeys(transport, derivationPath);
+    } else if (ur) {
+      loaderFn = (derivationPath: DerivationPath) => 
+        loadKeystonePublicKeys(ur, derivationPath);
     } else {
       return;
     }
 
     loaderFn(derivationPath)
       .then(async (publicKeys: string[]) => {
+        console.log(publicKeys);
         const balances = await loadBalances(publicKeys);
         setAccounts(
           balances.sort((a, b) =>
@@ -260,6 +269,21 @@ export function ImportAccounts({
     return publicKeys.map((p) =>
       blockchain === Blockchain.SOLANA ? bs58.encode(p) : p.toString()
     );
+  };
+
+  //
+  // Load accounts for a Keystone.
+  //
+  const loadKeystonePublicKeys = async (ur: UR, derivationPath: DerivationPath) => {
+    const accounts: ImportedDerivationPath[] = await background.request({
+      method: UI_RPC_METHOD_KEYSTONE_UR_DECODE,
+      params: [
+        blockchain,
+        ur,
+      ]
+    })
+    // TODO: match is not ok.
+    return accounts.filter(e => new RegExp(`^${derivationPathPrefix(blockchain, derivationPath)}`).test(e.path))
   };
 
   //
