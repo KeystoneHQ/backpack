@@ -156,7 +156,6 @@ export function ImportAccounts({
 
     loaderFn(derivationPath)
       .then(async (publicKeys: string[]) => {
-        console.log(publicKeys);
         const balances = await loadBalances(publicKeys);
         setAccounts(
           balances.sort((a, b) =>
@@ -283,7 +282,9 @@ export function ImportAccounts({
       ]
     })
     // TODO: match is not ok.
-    return accounts.filter(e => new RegExp(`^${derivationPathPrefix(blockchain, derivationPath)}`).test(e.path))
+    return accounts
+      .filter(e => new RegExp(`^${derivationPathPrefix(blockchain, derivationPath)}`).test(e.path))
+      .map(e => e.publicKey)
   };
 
   //

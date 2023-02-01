@@ -83,4 +83,6 @@ export interface KeystoneKeyring extends Keyring {
   keystoneImport(ur: UR): Promise<void>;
   toJson(): KeystoneKeyringJson;
   getAccounts(): ImportedDerivationPath[];
+  onPlay(fn: (ur: UR) => Promise<void>): void;
+  onRead(fn: () => Promise<UR>): void;
 }

@@ -20,6 +20,7 @@ import { ConnectHardwareWelcome } from "../../Unlocked/Settings/AddConnectWallet
 import { HardwareDefaultAccount } from "./HardwareDefaultAccount";
 import { HardwareSearch } from "./HardwareSearch";
 import { HardwareSign } from "./HardwareSign";
+import { KeystoneSign } from './KeystoneSign';
 
 export enum HardwareType {
   Keystone = "keystone",
@@ -57,7 +58,7 @@ export function useHardwareOnboardSteps({
   const [hardwareType, setHardwareType] = useState<HardwareType>(
     HardwareType.Keystone
   );
-  const [ur, setUR] = useState<UR>();
+  const [ur, setUR] = useState<UR>({ type: '', cbor: '' });
 
   // Component only allows onboarding of a singular selected account at this
   // time, the signing prompt needs to be reworked to handle multiple accounts
@@ -69,6 +70,8 @@ export function useHardwareOnboardSteps({
     setHardwareType(type);
     nextStep();
   }, []);
+
+  const SignMessage = hardwareType === HardwareType.USB ? HardwareSign : KeystoneSign;
 
   //
   // Flow for onboarding a hardware wallet.
@@ -164,7 +167,7 @@ export function useHardwareOnboardSteps({
     }[action],
     ...(account && derivationPath
       ? [
-          <HardwareSign
+          <SignMessage
             blockchain={blockchain}
             message={
               typeof signMessage === "string"
@@ -175,6 +178,7 @@ export function useHardwareOnboardSteps({
             derivationPath={derivationPath}
             accountIndex={account!.index}
             text={signText}
+            ur={ur}
             onNext={(signature: string) => {
               onComplete({
                 blockchain,
