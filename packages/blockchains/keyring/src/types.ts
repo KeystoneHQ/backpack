@@ -73,7 +73,7 @@ export interface LedgerKeyring extends LedgerKeyringBase {
 
 export interface KeystoneKeyringFactory {
   fromAccounts(accounts: Array<ImportedDerivationPath>): KeystoneKeyring;
-  fromUR(ur: UR): KeystoneKeyring;
+  fromUR(ur: UR): Promise<KeystoneKeyring>;
   fromJson(obj: KeystoneKeyringJson): KeystoneKeyring;
 }
 

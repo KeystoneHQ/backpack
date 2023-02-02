@@ -233,7 +233,7 @@ export const OnboardAccount = ({
           borderTopRightRadius: "12px",
         }}
       >
-        {keyringType === "ledger" ? (
+        {keyringType === "ledger" || keyringType === "keystone" ? (
           <HardwareOnboard
             blockchain={blockchain!}
             action={action!}
