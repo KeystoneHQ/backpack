@@ -24,7 +24,12 @@ import { KeystoneSign } from './KeystoneSign';
 
 export enum HardwareType {
   Keystone = "keystone",
-  USB = "usb",
+  Ledger = "ledger",
+}
+
+export interface HardwareBlockchainKeyringInit extends BlockchainKeyringInit {
+  hardwareType: HardwareType;
+  ur?: UR;
 }
 
 // We are using a hook here to generate the steps for the hardware onboard
@@ -47,7 +52,7 @@ export function useHardwareOnboardSteps({
   signMessage: string | ((publicKey: string) => string);
   signText: string;
   successComponent?: React.ReactElement;
-  onComplete: (keyringInit: BlockchainKeyringInit) => void;
+  onComplete: (keyringInit: HardwareBlockchainKeyringInit) => void;
   nextStep: () => void;
   prevStep: () => void;
 }) {
@@ -71,14 +76,14 @@ export function useHardwareOnboardSteps({
     nextStep();
   }, []);
 
-  const SignMessage = hardwareType === HardwareType.USB ? HardwareSign : KeystoneSign;
+  const SignMessage = hardwareType === HardwareType.Ledger ? HardwareSign : KeystoneSign;
 
   //
   // Flow for onboarding a hardware wallet.
   //
   const steps = [
     <ConnectHardwareWelcome onNext={onWelcomeNext} />,
-    hardwareType === HardwareType.USB ? (
+    hardwareType === HardwareType.Ledger ? (
       <ConnectHardwareSearching
         blockchain={blockchain}
         onNext={(transport) => {
@@ -186,6 +191,8 @@ export function useHardwareOnboardSteps({
                 derivationPath: derivationPath,
                 accountIndex: account.index,
                 signature,
+                hardwareType,
+                ur,
               });
               if (successComponent) {
                 nextStep();
@@ -219,7 +226,7 @@ export function HardwareOnboard({
   signMessage: string | ((publicKey: string) => string);
   signText: string;
   successComponent?: React.ReactElement;
-  onComplete: (keyringInit: BlockchainKeyringInit) => void;
+  onComplete: (keyringInit: HardwareBlockchainKeyringInit) => void;
   onClose?: () => void;
 }) {
   const theme = useCustomTheme();
