@@ -1,20 +1,19 @@
 // All RPC request handlers for requests that can be sent from the trusted
 // extension UI to the background script.
 
-import {
+import type {
   AutolockSettingsOption,
   Blockchain,
   Context,
   DerivationPath,
   EventEmitter,
   FEATURE_GATES_MAP,
+  KeyringType,
   Preferences,
   RpcRequest,
   RpcResponse,
-  UI_RPC_METHOD_KEYSTONE_UR_DECODE,
   UR,
-  XnftPreference,
-} from "@coral-xyz/common";
+  XnftPreference} from "@coral-xyz/common";
 import {
   BACKEND_EVENT,
   CHANNEL_POPUP_NOTIFICATIONS,
@@ -64,8 +63,9 @@ import {
   UI_RPC_METHOD_KEYRING_STORE_UNLOCK,
   UI_RPC_METHOD_KEYRING_TYPE_READ,
   UI_RPC_METHOD_KEYRING_VALIDATE_MNEMONIC,
-  UI_RPC_METHOD_LEDGER_IMPORT,
   UI_RPC_METHOD_KEYSTONE_IMPORT,
+  UI_RPC_METHOD_KEYSTONE_UR_DECODE,
+  UI_RPC_METHOD_LEDGER_IMPORT,
   UI_RPC_METHOD_NAVIGATION_ACTIVE_TAB_UPDATE,
   UI_RPC_METHOD_NAVIGATION_CURRENT_URL_UPDATE,
   UI_RPC_METHOD_NAVIGATION_POP,
@@ -330,7 +330,9 @@ async function handle<T = any>(
         params[1],
         params[2],
         params[3],
-        params[4]
+        params[4],
+        params[5],
+        params[6],
       );
     case UI_RPC_METHOD_BLOCKCHAIN_KEYRINGS_READ:
       return await handleBlockchainKeyringsRead(ctx);
@@ -1116,14 +1118,18 @@ async function handleBlockchainKeyringsAdd(
   derivationPath: DerivationPath,
   accountIndex: number,
   publicKey?: string,
-  signature?: string
+  signature?: string,
+  xfp?: string,
+  keyringType?: KeyringType
 ): Promise<RpcResponse<Array<string>>> {
   const resp = await ctx.backend.blockchainKeyringsAdd(
     blockchain,
     derivationPath,
     accountIndex,
     publicKey,
-    signature
+    signature,
+    xfp,
+    keyringType
   );
   return [resp];
 }

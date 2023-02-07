@@ -39,7 +39,7 @@ export async function getKeyringStore(
   const plaintext = await crypto.decrypt(ciphertextPayload, password);
   const json = JSON.parse(plaintext);
 
-  if (json.usernames) {
+  if (json.usernames) { 
     return json;
   }
 

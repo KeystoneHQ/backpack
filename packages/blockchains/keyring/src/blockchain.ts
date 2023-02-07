@@ -82,7 +82,7 @@ export class BlockchainKeyring {
     this.ledgerKeyring = this.ledgerKeyringFactory.fromAccounts([]);
     // Empty imported keyring to hold imported secret keys
     this.importedKeyring = this.keyringFactory.fromSecretKeys([]);
-    this.keystoneKeyring = this.keystoneKeyringFactory.fromAccounts([]);
+    this.keystoneKeyring = this.keystoneKeyringFactory.fromAccounts([], '');
     this.activeWallet = this.hdKeyring.getPublicKey(accountIndices[0]);
     this.deletedWallets = [];
 
@@ -104,7 +104,7 @@ export class BlockchainKeyring {
     this.ledgerKeyring = this.ledgerKeyringFactory.fromAccounts(accounts);
     // Empty imported keyring to hold imported secret keys
     this.importedKeyring = this.keyringFactory.fromSecretKeys([]);
-    this.keystoneKeyring = this.keystoneKeyringFactory.fromAccounts([]);
+    this.keystoneKeyring = this.keystoneKeyringFactory.fromAccounts([], '');
     this.activeWallet = accounts[0].publicKey;
     this.deletedWallets = [];
 
@@ -120,9 +120,10 @@ export class BlockchainKeyring {
   }
 
   public async initFromKeystone(
-    accounts: Array<ImportedDerivationPath>
+    accounts: Array<ImportedDerivationPath>,
+    xfp: string
   ): Promise<Array<[string, string]>> {
-    this.keystoneKeyring = this.keystoneKeyringFactory.fromAccounts(accounts);
+    this.keystoneKeyring = this.keystoneKeyringFactory.fromAccounts(accounts, xfp);
     // Empty imported and ledger keyring
     this.ledgerKeyring = this.ledgerKeyringFactory.fromAccounts([]);
     this.importedKeyring = this.keyringFactory.fromSecretKeys([]);

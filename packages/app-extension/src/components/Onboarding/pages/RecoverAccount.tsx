@@ -144,8 +144,8 @@ export const RecoverAccount = ({
     />,
     <KeyringTypeSelector
       action={"recover"}
-      onNext={(keyringType: KeyringType) => {
-        setKeyringType(keyringType);
+      onNext={(type: "mnemonic" | "hardware") => {
+        setKeyringType(type === 'mnemonic' ? type : null);
         nextStep();
       }}
     />,

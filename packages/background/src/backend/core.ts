@@ -1170,11 +1170,10 @@ export class Backend {
     blockchain: Blockchain,
     ur: UR,
   ) {
-    const accounts = await this.keyringStore.keystoneImport(
+    return await this.keyringStore.keystoneImport(
       blockchain,
       ur
     );
-    return accounts;
   }
 
   validateMnemonic(mnemonic: string): boolean {
@@ -1580,13 +1579,17 @@ export class Backend {
     derivationPath: DerivationPath,
     accountIndex: number,
     publicKey?: string,
-    signature?: string
+    signature?: string,
+    xfp?: string,
+    keyringType?: KeyringType
   ): Promise<string> {
     const newPublicKey = await this.keyringStore.blockchainKeyringAdd(
       blockchain,
       derivationPath,
       accountIndex,
-      publicKey
+      publicKey,
+      xfp,
+      keyringType
     );
 
     // Add the new public key to the API

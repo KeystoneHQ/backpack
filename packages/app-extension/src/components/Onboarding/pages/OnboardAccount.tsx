@@ -78,7 +78,7 @@ export const OnboardAccount = ({
       );
     } else {
       // Blockchain is being selected
-      if (keyringType === "ledger" || action === "import") {
+      if (keyringType === "ledger" || keyringType === 'keystone' || action === "import") {
         // If wallet is a ledger, step through the ledger onboarding flow
         // OR if action is an import then open the drawer with the import accounts
         // component
@@ -163,8 +163,8 @@ export const OnboardAccount = ({
     />,
     <KeyringTypeSelector
       action={action!}
-      onNext={(keyringType: KeyringType) => {
-        setKeyringType(keyringType);
+      onNext={(type: "mnemonic" | "hardware") => {
+        type === "mnemonic" && setKeyringType(type);
         nextStep();
       }}
     />,

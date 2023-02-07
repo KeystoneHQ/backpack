@@ -274,7 +274,7 @@ export function ImportAccounts({
   // Load accounts for a Keystone.
   //
   const loadKeystonePublicKeys = async (ur: UR, derivationPath: DerivationPath) => {
-    const accounts: ImportedDerivationPath[] = await background.request({
+    const { accounts }: {accounts: ImportedDerivationPath[]} = await background.request({
       method: UI_RPC_METHOD_KEYSTONE_UR_DECODE,
       params: [
         blockchain,

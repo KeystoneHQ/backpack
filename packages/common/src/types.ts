@@ -103,6 +103,8 @@ export type BlockchainKeyringInit = {
   accountIndex: number;
   publicKey: string;
   signature: string;
+  xfp?: string;
+  keyringType?: KeyringType
 };
 
 export interface XnftPreference {
@@ -174,7 +176,8 @@ export type UR = {
 };
 
 export type KeystoneKeyringJson = {
-  accounts: ImportedDerivationPath[]
+  accounts: ImportedDerivationPath[];
+  xfp: string;
 }
 
 // Legacy types. Don't use these.

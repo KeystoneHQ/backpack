@@ -9,6 +9,7 @@ import type {
   DerivationPath,
   EventEmitter,
   KeyringInit,
+  KeyringType,
   UR,
 } from "@coral-xyz/common";
 import {
@@ -18,8 +19,8 @@ import {
   defaultPreferences,
   NOTIFICATION_KEYRING_STORE_LOCKED,
 } from "@coral-xyz/common";
-import type { KeyringStoreState } from "@coral-xyz/recoil";
-import { KeyringStoreStateEnum } from "@coral-xyz/recoil";
+import type { KeyringStoreState} from "@coral-xyz/recoil";
+import { KeyringStoreStateEnum  } from "@coral-xyz/recoil";
 import { generateMnemonic } from "bip39";
 
 import type { KeyringStoreJson, User, UserKeyringJson } from "../store";
@@ -406,6 +407,8 @@ export class KeyringStore {
     derivationPath: DerivationPath,
     accountIndex: number,
     publicKey?: string,
+    xfp?: string,
+    keyringType?: KeyringType,
     persist = true
   ): Promise<string> {
     // If this is a mnemonic based keyring the public key being returned is
@@ -414,7 +417,9 @@ export class KeyringStore {
       blockchain,
       derivationPath,
       accountIndex,
-      publicKey
+      publicKey,
+      xfp,
+      keyringType
     );
     if (persist) {
       await this.persist();
@@ -669,7 +674,9 @@ class UserKeyring {
         blockchainKeyring.blockchain,
         blockchainKeyring.derivationPath,
         blockchainKeyring.accountIndex,
-        blockchainKeyring.publicKey
+        blockchainKeyring.publicKey,
+        blockchainKeyring.xfp,
+        blockchainKeyring.keyringType
       );
     }
 
@@ -763,7 +770,9 @@ class UserKeyring {
     blockchain: Blockchain,
     derivationPath: DerivationPath,
     accountIndex: number,
-    publicKey?: string
+    publicKey?: string,
+    xfp?: string,
+    keyringType?: KeyringType
   ): Promise<string> {
     const keyring = keyringForBlockchain(blockchain);
     let newPublicKey: string;
@@ -782,13 +791,28 @@ class UserKeyring {
           "initialising keyring with hardware wallet requires publickey"
         );
       // Initialising using a hardware wallet
-      await keyring.initFromLedger([
-        {
-          path: derivationPath,
-          account: accountIndex,
-          publicKey,
-        },
-      ]);
+      if (keyringType === 'keystone') {
+        if (!xfp) {
+          throw new Error(
+            "initialising keyring with Keystone wallet requires xfp"
+          );
+        }
+        await keyring.initFromKeystone([
+          {
+            path: derivationPath,
+            account: accountIndex,
+            publicKey,
+          },
+        ], xfp);
+      } else {
+        await keyring.initFromLedger([
+          {
+            path: derivationPath,
+            account: accountIndex,
+            publicKey,
+          },
+        ]);
+      }
       // This is the same as the public key that was passed in, it is returned
       // unchanged
       newPublicKey = publicKey;
@@ -873,7 +897,7 @@ class UserKeyring {
     const keystoneKeyring = blockchainKeyring!.keystoneKeyring!;
     await keystoneKeyring.keystoneImport(ur, pubkey);
     if (pubkey) {
-      const accounts = keystoneKeyring.getAccounts();
+      const accounts = keystoneKeyring.getCachedAccounts();
       const i = accounts.findIndex(e => e.publicKey === pubkey);
       if (i > -1) {
         const account = accounts[i];
@@ -882,7 +906,10 @@ class UserKeyring {
         await store.setIsCold(account.publicKey, true);
       }
     }
-    return keystoneKeyring.getAccounts();
+    return {
+      accounts: keystoneKeyring.getCachedAccounts(),
+      xfp: keystoneKeyring.getXFP(),
+    };
   }
 
   public async keyDelete(blockchain: Blockchain, pubkey: string) {
