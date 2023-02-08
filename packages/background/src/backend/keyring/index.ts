@@ -3,18 +3,18 @@ import {
   keyringForBlockchain,
 } from "@coral-xyz/blockchain-common";
 import type { BlockchainKeyring } from "@coral-xyz/blockchain-keyring";
+import { SolanaKeystoneKeyring } from '@coral-xyz/blockchain-solana';
 import type {
   AutolockSettingsOption,
-  Blockchain,
   DerivationPath,
   EventEmitter,
   KeyringInit,
   KeyringType,
-  UR,
-} from "@coral-xyz/common";
+  UR} from "@coral-xyz/common";
 import {
   BACKEND_API_URL,
   BACKEND_EVENT,
+  Blockchain,
   DEFAULT_AUTO_LOCK_INTERVAL_SECS,
   defaultPreferences,
   NOTIFICATION_KEYRING_STORE_LOCKED,
@@ -505,6 +505,17 @@ export class KeyringStore {
     });
   }
 
+  public async keystoneURDecode(
+    blockchain: Blockchain,
+    ur: {type: string, cbor: string},
+  ) {
+    const keyring = blockchain === Blockchain.SOLANA ? await SolanaKeystoneKeyring.fromUR(ur) : null;
+    return {
+      accounts: keyring?.getCachedAccounts(),
+      xfp: keyring?.getXFP(),
+    };
+  }
+
   /**
    * Update the active public key for the given blockchain.
    */
@@ -903,7 +914,7 @@ class UserKeyring {
         const account = accounts[i];
         const name = DefaultKeyname.defaultKeystone(account.account);
         await store.setKeyname(account.publicKey, name);
-        await store.setIsCold(account.publicKey, true);
+        await store.setIsCold(account.publicKey, false);
       }
     }
     return {
